@@ -102,7 +102,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         
         cursor.close();
-        db.close();
         
         // If we found any valid IDs, use the highest one + 1
         if (maxNumber > 0) {
@@ -116,22 +115,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         
-        // Generate sequential ID if not provided
-        if (appointment.getAppointmentId() == null || appointment.getAppointmentId().isEmpty()) {
-            String newId = getLastAppointmentId();
-            values.put(COLUMN_APPOINTMENT_ID, newId);
-        } else {
-            values.put(COLUMN_APPOINTMENT_ID, appointment.getAppointmentId());
+        try {
+            // Generate sequential ID if not provided
+            if (appointment.getAppointmentId() == null || appointment.getAppointmentId().isEmpty()) {
+                String newId = getLastAppointmentId();
+                values.put(COLUMN_APPOINTMENT_ID, newId);
+            } else {
+                values.put(COLUMN_APPOINTMENT_ID, appointment.getAppointmentId());
+            }
+            
+            values.put(COLUMN_PATIENT_ID, appointment.getPatientId());
+            values.put(COLUMN_PATIENT_NAME, appointment.getPatientName());
+            values.put(COLUMN_DOCTOR_ID, appointment.getDoctorId());
+            values.put(COLUMN_DOCTOR_NAME, appointment.getDoctorName());
+            values.put(COLUMN_DATE, appointment.getDate());
+            values.put(COLUMN_TIME, appointment.getTime());
+            db.insert(TABLE_APPOINTMENTS, null, values);
+        } finally {
+            db.close();
         }
-        
-        values.put(COLUMN_PATIENT_ID, appointment.getPatientId());
-        values.put(COLUMN_PATIENT_NAME, appointment.getPatientName());
-        values.put(COLUMN_DOCTOR_ID, appointment.getDoctorId());
-        values.put(COLUMN_DOCTOR_NAME, appointment.getDoctorName());
-        values.put(COLUMN_DATE, appointment.getDate());
-        values.put(COLUMN_TIME, appointment.getTime());
-        db.insert(TABLE_APPOINTMENTS, null, values);
-        db.close();
     }
 
     public List<Appointment> getAllAppointments() {
